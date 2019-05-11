@@ -1,7 +1,8 @@
 /**
+
  * Physics Experiment
- * Author: Your Name and Carolyn Yao
- * Does this compile or finish running within 5 seconds? Y/N
+ * Author: Burraque Khattak and Carolyn Yao
+ * Does this compile or finish running within 5 seconds? Y
  */
 
 /**
@@ -36,9 +37,53 @@ public class PhysicsExperiment {
     // Your scheduleTable is initialized as all 0's so far. Your code will put 1's
     // in the table in the right places based on the return description
     int[][] scheduleTable = new int[numStudents + 1][numSteps + 1];
-
     // Your code goes here
-
+    int remainingSteps=numSteps; 
+    int currStudent=1; //index of current student that we are considering assigning to a certain step
+    int currStep=1; //index of the current step
+    
+    while(remainingSteps>0) {
+      if (signUpTable[currStudent][currStep] == 1) {
+          scheduleTable[currStudent][currStep]=1; //sign up the student for the current step
+          currStep++; //one student per step so we are done with this step and increase our step counter
+          remainingSteps--; //decrease the remaining number of steps since we assigned one
+          } 
+            //finds the student that will do the most consecutive steps in a row
+      else
+         {
+           // while current step hasnt reached max steps
+          if(currStep != numSteps) {
+                //Index of most consecutive Steps
+                int studentIndexConsecutive = 0; 
+                //counter of highest consec steps
+                int highestConsecutive=0; 
+          for (int r = 1; r <= numStudents; r++) {
+                  // initialize current number of consecutive steps to 0 to compare to highestConsecutive
+                    int currConsecutive=0;
+                    for(int c=currStep; c<=numSteps; c++) {
+                        //0 indicates student isnt signed up, end consecutive, break loop
+                        if(signUpTable[r][c]==0) 
+                         break;
+                    
+                          // increment curr consecutive counter to compare highestConsecutive to
+                            currConsecutive++;
+                          // if current consecutive counter is greater than highest consecutive, that becomes the highest consecutive
+                         if(currConsecutive > highestConsecutive) {
+                            highestConsecutive=currConsecutive;
+                            studentIndexConsecutive=r;
+                        }
+                    }
+                }
+                currStudent= studentIndexConsecutive; //curr student holds index of most consecutive step having student
+            }
+        else {
+            if(currStudent==numStudents)// if curr student is the last student we go back to the first student
+                currStudent=1;
+            else
+                currStudent++;
+        }
+      }
+    }
     return scheduleTable;
   }
 

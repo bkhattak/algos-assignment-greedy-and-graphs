@@ -1,7 +1,7 @@
 /**
  * Public Transit
- * Author: Your Name and Carolyn Yao
- * Does this compile? Y/N
+ * Author: Burraque Khattak and Carolyn Yao
+ * Does this compile? Y
  */
 
 /**
@@ -32,9 +32,86 @@ public class FastestRoutePublicTransit {
     int[][] first,
     int[][] freq
   ) {
-    // Your code along with comments here. Feel free to borrow code from any
-    // of the existing method. You can also make new helper methods.
-    return 0;
+    //modded dijkstra to find shortest path from start to destination
+    int shortPaths[] = ShortPathMod(lengths, S, T); 
+    //begins at -1 since looping by decrementing
+    int index = first[0].length-1;
+    while (shortPaths[index] != S && index > 0) {
+      index--;
+    }
+     //counter for shortest time between start and dest
+    int startToDestTime = 0;
+     //counter for time of next train
+    int nextTrain; 
+    int currTime=startTime;
+
+    for(int i=index; i>=1; i--) {
+      // 
+      int stationIndex = shortPaths[i];
+      int nextStation = shortPaths[i-1];
+      int trainTimes= first[stationIndex][nextStation];
+      int k = 0;
+        while (trainTimes < currTime) {
+          trainTimes = first[stationIndex][nextStation] + (k * freq[stationIndex][nextStation]);
+          k++;
+      }
+
+      nextTrain = trainTimes + lengths[stationIndex][nextStation];
+      startToDestTime = startToDestTime + (nextTrain - currTime);
+      currTime=nextTrain;
+    }
+    return startToDestTime;
+  }
+
+//Modded dijkstras algorithm
+  public int[] ShortPathMod(int[][] graph, int src, int dest) {
+    int last = graph[0].length;    // the final shortest
+    int[] times = new int[last];   // shortest time from src to i
+    int[] prev = new int[last];    // stations visited
+    int[] shortPath = new int[last];
+    prev[src] = -1;    // Sets the previous station of source to -1 since it doesn't exist.
+
+    // sptSet[i] will true if vertex i is included in shortest
+    // path tree or shortest distance from src to i is finalized
+    Boolean includedSet[] = new Boolean[last];
+
+    // Initialize all distances as INFINITE and stpSet[] as false
+    for (int i = 0; i < last; i++)
+    {
+      times[i] = Integer.MAX_VALUE;
+      shortPath[i] = -1;
+      includedSet[i] = false;
+    }
+    times[src] = 0; // init source time to 0, 0 time from src to itself
+    for (int n = 0; n < last - 1; n++) { 		// Find shortest path to all the vertices
+      // Pick the minimum distance vertex from the set of vertices not yet processed.
+      // u is always equal to source in first iteration.
+      // Mark u as processed.
+      int u = findNextToProcess(times, includedSet);
+      includedSet[u] = true;
+
+
+      // v through u is smaller than current value of time[v]
+      //if time[v] isnt already in includedSet, there exists a path from
+        //vertices v to u and its weight from source to it is less than time[v]
+      for (int v = 0; v < last; v++) {
+        if (!includedSet[v] && graph[u][v]!=0 && times[u] != Integer.MAX_VALUE && times[u]+graph[u][v] < times[v]) {
+          times[v] = times[u] + graph[u][v];
+          prev[v] = u; //Records u as the previous station of v.
+        }
+      }
+    }
+
+    int tar = dest;
+    int i = 0;
+    // stores total times of paths to add later on 
+    while (tar != src) {
+      shortPath[i++] = tar;
+      tar = prev[tar];
+    }
+
+    shortPath[i] = tar;
+    return shortPath;
   }
 
   /**
@@ -104,7 +181,6 @@ public class FastestRoutePublicTransit {
         }
       }
     }
-
     printShortestTimes(times);
   }
 
@@ -125,5 +201,46 @@ public class FastestRoutePublicTransit {
     t.shortestTime(lengthTimeGraph, 0);
 
     // You can create a test case for your implemented method for extra credit below
+
+    int length[][] = new int[][] {
+      { 0, 0,6,3,0,2,0,1,0},
+      {0,0,8,0,14,0,0,0,0},
+      {6,8,0,7,0,4,0,0,6},
+      {0,0,7,0,11,4,0,2,0},
+      {0,14,0,11,0,3,0,0,2},
+      {2,1,3,3,0,0,6,0,0},
+      {0,0,0,0,5,6,6,5,0},
+      {0,0,0,2,0,0,3,3,0},
+      {0,0,6,0,0,0,2,0,1}};
+
+  int first[][] = new int[][] {
+      {0,0,3,3,0,8,0,15,2},
+      {0,0,2,0,23,0,0,3,0},
+      {2,8,0,7,0,4,0,0,1},
+      {0,0,7,0,13,4,0,6,0},
+      {0,11,0,0,0,9,0,0,5},
+      {8,0,4,1,1,1,8,1,1},
+      {1,0,0,3,5,4,0,1,6},
+      {0,0,0,4,0,0,4,0,0},
+      {0,0,4,0,9,0,1,0,0}};
+
+   int freq[][] = new int[][] {
+      {0,0,5,0,0,4,0,5,0},
+      {0,7,6,0,8,1,0,0,0},
+      {5,6,0,7,9,4,0,0,8},
+      {0,1,7,0,10,8,0,2,0},
+      {0,8,0,10,0,0,0,0,8},
+      {8,0,8,8,0,3,7,9,0},
+      {0,0,2,0,0,7,1,8,6},
+      {5,4,1,2,1,1,8,0,0},
+      {0,0,8,0,1,0,6,0,2}};
+
+
+    int time;
+    int src = 1;
+    int dest = 8;
+
+    time = t.myShortestTravelTime(src, dest, 5, length, first, freq);
+    System.out.println( " From station " + src + " to station " + dest + " it takes " + time + " minutes.");
   }
 }
